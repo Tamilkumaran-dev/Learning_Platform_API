@@ -54,6 +54,10 @@ public class JwtFilterChain extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if(path.startsWith("/api")){
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if(request.getCookies() != null){
             for(Cookie cookie : request.getCookies()){

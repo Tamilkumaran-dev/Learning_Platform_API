@@ -77,7 +77,11 @@ public class AuthService {
 
         // Generate JWT token
         String token = jwtUtil.generateJwtToken(login.getEmail());
-        return new ResponseDto("Login Successful", "LoggedIn", Optional.ofNullable(token));
+
+        String roles = masterOpt.isPresent() ? masterOpt.get().getRole() : (adminOpt.isPresent() ? adminOpt.get().getRole() : "ROLE_USER");
+
+
+        return new ResponseDto("Login Successful", roles, Optional.ofNullable(token));
     }
 
 
@@ -111,12 +115,13 @@ public class AuthService {
 
         Optional<UserDb> user = userRepo.findByEmail(email);
         Optional<AdminDb> adminDb = adminRepository.findByEmail(email);
+        Optional<MasterDb> masterDb = masterRepo.findByEmail(email);
 
         if(user.isPresent()) {
             return new ResponseDto("User is LoggedIn", "LoggedIn", Optional.of(user.get().getRole()));
         }
-        else{
-            return new ResponseDto("Admin is LoggedIn", "LoggedIn", Optional.of(adminDb.get().getRole()));
-        }
+        else
+            return masterDb.map(db -> new ResponseDto("User is LoggedIn", "LoggedIn", Optional.of(db.getRole())))
+                    .orElseGet(() -> new ResponseDto("Admin is LoggedIn", "LoggedIn", Optional.of(adminDb.get().getRole())));
     }
 }

@@ -1,12 +1,12 @@
 package com.app.LearningPlatformAPI.services;
 
 
-import com.app.LearningPlatformAPI.MyLearningDTO;
+import com.app.LearningPlatformAPI.dto.MyLearningDTO;
 import com.app.LearningPlatformAPI.dto.ResponseDto;
 import com.app.LearningPlatformAPI.entities.CourseDb;
 import com.app.LearningPlatformAPI.entities.CourseStatus;
-import com.app.LearningPlatformAPI.entities.ModulesDb;
 import com.app.LearningPlatformAPI.entities.UserDb;
+import com.app.LearningPlatformAPI.exception.exceptions.NotFound;
 import com.app.LearningPlatformAPI.repository.CourseRepository;
 import com.app.LearningPlatformAPI.repository.CourseStatusRepo;
 import com.app.LearningPlatformAPI.repository.ModuleRepository;
@@ -14,10 +14,8 @@ import com.app.LearningPlatformAPI.repository.UserRepository;
 import com.app.LearningPlatformAPI.utils.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,6 +45,10 @@ public class UserService {
 
         String email =jwtUtil.decodeToken(pureToken).getSubject();
         Optional<UserDb> user = userRepo.findByEmail(email);
+
+        if(user.isEmpty()){
+            throw new NotFound("User not found");
+        }
 
         return new ResponseDto("User Profile","Profile",user);
 
@@ -127,50 +129,97 @@ public class UserService {
         }
     }
 
-
-    public ResponseDto myLearningService(HttpServletRequest request){
+    public ResponseDto myLearningService(HttpServletRequest request) {
 
         String pureToken = "";
-
         for (Cookie cookie : request.getCookies()) {
             if ("jwt".equals(cookie.getName())) {
                 pureToken = cookie.getValue();
             }
         }
 
-        if(pureToken.equals("")){
+        if (pureToken.isEmpty()) {
             throw new RuntimeException("Login first");
         }
 
         String email = jwtUtil.decodeToken(pureToken).getSubject();
         Optional<UserDb> user = userRepo.findByEmail(email);
 
-        if(user.isEmpty()){
-            throw new RuntimeException("This user can not perform this action");
-        }
-        else{
-            if(!user.get().getEnrolledCourseList().isEmpty()) {
-                Optional<List<CourseStatus>> statusList = courseStatusRepo.findAllByUserId(user.get().getId());
-
-                ArrayList<MyLearningDTO> myLearning = new ArrayList<>();
-
-                for(CourseDb course : user.get().getEnrolledCourseList()){
-                    MyLearningDTO myLearningDTO = new MyLearningDTO();
-                    for(CourseStatus status : statusList.get()){
-                        if(status.getCourseId().equals(course.getId())){
-                            myLearningDTO.setCourse(course);
-                            myLearningDTO.setCourseStatus(status);
-                            myLearning.add(myLearningDTO);
-                            break;
-                        }
-                    }
-                }
-                return new ResponseDto("MyLearning","MyLearning",Optional.of(myLearning));
-            }
-            else{
-                return new ResponseDto("Your haven't enrolled in anycoures","Not Enrolled");
-            }
+        if (user.isEmpty()) {
+            throw new RuntimeException("This user cannot perform this action");
         }
 
+        UserDb currentUser = user.get();
+
+        if (currentUser.getEnrolledCourseList() == null || currentUser.getEnrolledCourseList().isEmpty()) {
+            return new ResponseDto("You haven't enrolled in any course", "Not Enrolled");
+        }
+
+        List<CourseStatus> statusList = courseStatusRepo.findAllByUserId(currentUser.getId())
+                .orElse(new ArrayList<>());
+
+        List<MyLearningDTO> myLearning = new ArrayList<>();
+
+        for (CourseDb course : currentUser.getEnrolledCourseList()) {
+            // find matching course status (if any)
+            CourseStatus matchedStatus = statusList.stream()
+                    .filter(status -> status.getCourseId().equals(course.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            MyLearningDTO dto = new MyLearningDTO();
+            dto.setCourse(course);
+            dto.setCourseStatus(matchedStatus);
+            myLearning.add(dto);
+        }
+
+        return new ResponseDto("MyLearning", "MyLearning", Optional.of(myLearning));
     }
+
+
+//    public ResponseDto myLearningService(HttpServletRequest request){
+//
+//        String pureToken = "";
+//
+//        for (Cookie cookie : request.getCookies()) {
+//            if ("jwt".equals(cookie.getName())) {
+//                pureToken = cookie.getValue();
+//            }
+//        }
+//
+//        if(pureToken.equals("")){
+//            throw new RuntimeException("Login first");
+//        }
+//
+//        String email = jwtUtil.decodeToken(pureToken).getSubject();
+//        Optional<UserDb> user = userRepo.findByEmail(email);
+//
+//        if(user.isEmpty()){
+//            throw new RuntimeException("This user can not perform this action");
+//        }
+//        else{
+//            if(!user.get().getEnrolledCourseList().isEmpty()) {
+//                Optional<List<CourseStatus>> statusList = courseStatusRepo.findAllByUserId(user.get().getId());
+//
+//                ArrayList<MyLearningDTO> myLearning = new ArrayList<>();
+//
+//                for(CourseDb course : user.get().getEnrolledCourseList()){
+//                    MyLearningDTO myLearningDTO = new MyLearningDTO();
+//                    for(CourseStatus status : statusList.get()){
+//                        if(status.getCourseId().equals(course.getId())){
+//                            myLearningDTO.setCourse(course);
+//                            myLearningDTO.setCourseStatus(status);
+//                            myLearning.add(myLearningDTO);
+//                            break;
+//                        }
+//                    }
+//                }
+//                return new ResponseDto("MyLearning","MyLearning",Optional.of(myLearning));
+//            }
+//            else{
+//                return new ResponseDto("Your haven't enrolled in anycoures","Not Enrolled");
+//            }
+//        }
+//
+//    }
 }

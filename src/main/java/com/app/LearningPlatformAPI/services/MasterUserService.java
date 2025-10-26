@@ -3,6 +3,7 @@ package com.app.LearningPlatformAPI.services;
 
 import com.app.LearningPlatformAPI.dto.ResponseDto;
 import com.app.LearningPlatformAPI.entities.AdminDb;
+import com.app.LearningPlatformAPI.entities.CourseDb;
 import com.app.LearningPlatformAPI.entities.MasterDb;
 import com.app.LearningPlatformAPI.entities.UserDb;
 import com.app.LearningPlatformAPI.exception.exceptions.NotFound;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 @Service
@@ -29,6 +31,7 @@ public class MasterUserService {
     private AdminRepository adminRepo;
     private MasterRepository masterRepo;
     private PasswordEncoder passwordEncoder;
+    private AdminService adminService;
     private JwtUtil jwtUtil;
 
     public ResponseDto signUpMaster(MasterDb masterDb){
@@ -88,17 +91,39 @@ public class MasterUserService {
         }
     }
 
-    public ResponseDto deleteAdmin(Long id) {
-
-        adminRepo.deleteById(id);
+    public ResponseDto getAdmin(Long id){
 
         Optional<AdminDb> admin = adminRepo.findById(id);
+        if(admin.isEmpty()){
+            throw new NotFound("Admin not found");
+        }
+        return new ResponseDto("Admin found","Found",Optional.of(admin.get()));
 
-        if(admin.isPresent()){
+    }
+
+    public ResponseDto deleteAdmin(Long id) {
+
+        AdminDb admin = adminRepo.findById(id)
+                .orElseThrow(() -> new NotFound("Instructor not found"));
+
+        if (!admin.getCourses().isEmpty()) {
+            // Delete each course properly
+            for (CourseDb course : new ArrayList<>(admin.getCourses())) {
+                adminService.dropCourse(course.getId());
+            }
+
+            // Clear the admin's course list after deletion
+            admin.getCourses().clear();
+        }
+
+        // Now delete the admin safely
+        adminRepo.delete(admin);
+
+        if (adminRepo.existsById(id)) {
             throw new RuntimeException("Unable to delete the admin user");
         }
-        else{
-            return new ResponseDto("Deleted successfully","Deleted");
-        }
+
+        return new ResponseDto("Deleted successfully", "Deleted");
     }
+
 }

@@ -1,4 +1,4 @@
-package com.app.LearningPlatformAPI;
+package com.app.LearningPlatformAPI.dto;
 
 import com.app.LearningPlatformAPI.entities.CourseDb;
 import com.app.LearningPlatformAPI.entities.CourseStatus;

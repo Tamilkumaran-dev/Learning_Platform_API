@@ -5,6 +5,7 @@ import com.app.LearningPlatformAPI.entities.AdminDb;
 import com.app.LearningPlatformAPI.entities.CourseDb;
 import com.app.LearningPlatformAPI.entities.ModulesDb;
 import com.app.LearningPlatformAPI.entities.UserDb;
+import com.app.LearningPlatformAPI.exception.exceptions.NotFound;
 import com.app.LearningPlatformAPI.repository.AdminRepository;
 import com.app.LearningPlatformAPI.repository.CourseRepository;
 import com.app.LearningPlatformAPI.repository.ModuleRepository;
@@ -46,9 +47,9 @@ public class AdminService {
         courseDb.setAdmin(adminDb.get());
         courseDb.setTime(LocalDateTime.now());
 
-        courseRepo.save(courseDb);
+        CourseDb course = courseRepo.save(courseDb);
 
-        return new ResponseDto("The course has been created","Created");
+        return new ResponseDto("The course has been created","Created",Optional.of(course));
 
     }
 
@@ -79,7 +80,9 @@ public class AdminService {
         String email =jwtUtil.decodeToken(pureToken).getSubject();
 
         Optional<AdminDb> adminDb = adminRepo.findByEmail(email);
-
+        if(adminDb.isEmpty()){
+            throw new NotFound("Admin not found");
+        }
         return new ResponseDto("Admin profile","Profile",Optional.of(adminDb));
     }
 
