@@ -19,10 +19,10 @@ public class HomeService {
 
     private CourseRepository courseRepo;
 
-    public ResponseDto getAllCourse(){
-        List<CourseDb> courseList =  courseRepo.findAll();
-        return new ResponseDto("Get All the course","");
-    }
+//    public ResponseDto getAllCourse(){
+//        List<CourseDb> courseList =  courseRepo.findAll();
+//        return new ResponseDto("Get All the course","");
+//    }
 
 
     public Page<CourseDb> searchCourse(String keyword, int page, int size) {

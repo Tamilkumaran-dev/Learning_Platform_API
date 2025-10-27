@@ -15,7 +15,7 @@ import java.util.Date;
 public class JwtUtil {
 
     private final static String SECRET = "This a secret that no one wants to know so don't tell to anyone";
-    private final static long EXPIRATION = 120 * 1000;
+    private final static long EXPIRATION =  1000L * 60 * 60 * 24 * 30;
     private Key key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
 

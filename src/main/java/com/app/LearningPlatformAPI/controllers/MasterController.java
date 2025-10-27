@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
         name = "Master Management API",
         description = "Endpoints for managing master users, admins, and related operations."
 )
-@RequestMapping("/master")
 public class MasterController {
 
     private final MasterUserService masterService;
@@ -29,7 +28,7 @@ public class MasterController {
             summary = "Register a master user",
             description = "Creates a new master account with elevated privileges."
     )
-    @PostMapping("/auth/signUp")
+    @PostMapping("/auth/master/signUpp")
     public ResponseEntity<ResponseDto> addMasterUser(@RequestBody MasterDb master) {
         return new ResponseEntity<>(masterService.signUpMaster(master), HttpStatus.CREATED);
     }
@@ -38,7 +37,7 @@ public class MasterController {
             summary = "Get master profile",
             description = "Fetches the profile information of the currently authenticated master user."
     )
-    @GetMapping("/profile")
+    @GetMapping("/master/profile")
     public ResponseEntity<ResponseDto> getMasterProfile(HttpServletRequest request) {
         return new ResponseEntity<>(masterService.getMasterProfile(request), HttpStatus.OK);
     }
@@ -47,7 +46,7 @@ public class MasterController {
             summary = "Find admin by ID",
             description = "Retrieves a specific admin’s details using their unique ID."
     )
-    @GetMapping("/findAdmin/{id}")
+    @GetMapping("master/findAdmin/{id}")
     public ResponseEntity<ResponseDto> findAdmin(@PathVariable("id") Long id) {
         return new ResponseEntity<>(masterService.getAdmin(id), HttpStatus.OK);
     }
@@ -56,11 +55,8 @@ public class MasterController {
             summary = "Get unverified admins",
             description = "Searches and paginates through unverified admin accounts based on a keyword."
     )
-    @GetMapping("/getAdminUser/{keyword}/{page}/{size}")
-    public ResponseEntity<Page<AdminDb>> getUnVerified(
-            @PathVariable("keyword") String keyword,
-            @PathVariable("page") int page,
-            @PathVariable("size") int size) {
+    @GetMapping("/master/getAdminUser/{keyword}/{page}/{size}")
+    public ResponseEntity<Page<AdminDb>> getUnVerified(@PathVariable("keyword") String keyword,@PathVariable("page") int page, @PathVariable("size") int size) {
         return new ResponseEntity<>(masterService.getUnVerifiedAdmin(keyword, page, size), HttpStatus.OK);
     }
 
@@ -68,7 +64,7 @@ public class MasterController {
             summary = "Delete admin by ID",
             description = "Removes an admin account and associated data from the system."
     )
-    @DeleteMapping("/deleteAdmin/{adminId}")
+    @DeleteMapping("/master/deleteAdmin/{adminId}")
     public ResponseEntity<ResponseDto> deleteAdmin(@PathVariable("adminId") Long id) {
         return new ResponseEntity<>(masterService.deleteAdmin(id), HttpStatus.OK);
     }
