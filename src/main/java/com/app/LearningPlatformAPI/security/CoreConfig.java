@@ -14,7 +14,7 @@ public class CoreConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("/**","http://localhost:5173/") // your frontend
+                        .allowedOrigins("https://learnhub-git-main-tamilkumarans-projects.vercel.app/","https://learnhub-mu-nine.vercel.app/") // your frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowCredentials(true)
                         .allowedHeaders("*")
