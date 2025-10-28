@@ -12,7 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @SpringBootApplication
 @OpenAPIDefinition(info = @Info(
 		title = "Learning Platform API",
-		description = "In this platform i have created a basic and simple Learning application, I have implemented multiple roles in this application. this a beta version i am current working to improving it",
+		description = "In this platform i have created a basic and simple Learning application, I have implemented multiple roles in this application. this a beta version i am current working to improving it" +
+				"Master or Manager Login id : tamilkumaran001@gmail.com" +
+				",Password: Tamil",
 		version = "1.0.0 Beta",
 		contact = @Contact(
 				name = "Tamilkumaran",
